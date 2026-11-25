@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scenix-产品需求-PRD</title>
+<style>
+/* design-html 基础样式。由 scripts/build.py 原样内联到 design.html,不要手改输出里的这一段。 */
+:root {
+  --bg: #fbf9f5;          /* 暖白底,全页统一 */
+  --panel: #ffffff;       /* 示意图节点、正文里的卡片 */
+  --panel-2: #f3f1ec;     /* 引用块、泳道 */
+  --border: #dcd9d0;      /* 1px 细线,替代阴影 */
+  --text: #1b1b1b;
+  --text-2: #6b6964;      /* 次要文字、口径、图注 */
+  --text-3: #73706a;      /* 坐标刻度 */
+  --accent: #184ea4;      /* 唯一强调色 */
+  --accent-soft: #dfe6e8;
+  --ok: #2f7a4a;  --warn: #9a6212;  --bad: #b3362e;
+
+  /* 数据图与对比表(已做色弱和对比度校验,不要改) */
+  --grid: #e8e6e0;  --axis: #9c9990;  --rule: #1b1b1b;
+  --hl: #dfe6e8;  --hl-strong: #c4d2df;  --focus: #6a9bcc;
+  --blue: #184ea4;    --blue-lt: #89a9dc;    --blue-ink: #184ea4;
+  --green: #109d7b;   --green-lt: #7db6a1;   --green-ink: #0c7b60;
+  --orange: #c67625;  --orange-lt: #cb9d78;  --orange-ink: #a55f16;
+  --violet: #a378c5;  --violet-lt: #b49dc8;  --violet-ink: #895faa;
+  --gray: #9c9990;    --gray-lt: #cbc8c0;
+  --red-1: #c8787b;  --red-2: #c05b61;  --red-3: #b23e4a;  --red-4: #9c2938;  --red-5: #821829;
+  --red-ink: #9c2938;
+
+  /* 示意图数据流箭头(三色两两在色弱和灰度下都能区分) */
+  --flow-main: #142f4b;   /* 主交互 / 发起动作 */
+  --flow-out: #cc3143;    /* 输出 / 结论 */
+  --flow-in: #6f35a2;     /* 输入 / 素材流入 */
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.7; }
+main { max-width: 880px; margin: 0 auto; padding: 48px 16px 96px; }
+
+/* ---------- 正文 ---------- */
+h1 { font-size: 30px; font-weight: 600; line-height: 1.3; margin: 0 0 8px; }
+h2 { font-size: 22px; font-weight: 600; line-height: 1.4; margin: 56px 0 12px; padding-top: 24px; border-top: 1px solid var(--border); }
+h3 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 28px 0 8px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 1.4em; }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.meta { color: var(--text-2); font-size: 14px; margin-bottom: 24px; }
+.lead { font-size: 17px; margin: 16px 0 24px; }
+.muted { color: var(--text-2); }
+blockquote, .callout { margin: 16px 0; padding: 12px 16px; background: var(--panel-2); border-left: 3px solid var(--border); }
+.callout.key { border-left-color: var(--accent); }
+
+/* 卡片网格:窄屏自动单列 */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 16px 0; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+.card h4 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+.card p:last-child { margin-bottom: 0; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+
+/* 示意图 */
+figure { margin: 24px 0; }
+figure.diagram > svg, figure.diagram > .scroll-x > svg { display: block; width: 100%; height: auto; }
+.only-mobile { display: none !important; }
+figure.diagram figcaption { color: var(--text-2); font-size: 14px; margin-top: 10px; }
+.scroll-x { overflow-x: auto; }
+
+/* 普通表格 */
+.tbl-wrap { overflow-x: auto; margin: 16px 0; }
+table.tbl { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+.tbl th { font-weight: 600; }
+.tbl tbody tr:hover { background: var(--panel-2); }
+
+/* ---------- 数据图外壳:结论标题 + 灰色口径 ---------- */
+.c-chart { margin: 48px 0; }
+.c-head h3 { font-size: 21px; font-weight: 500; line-height: 1.4; margin: 0 0 6px; }
+.c-head p { color: var(--text-2); font-size: 15px; margin: 0; }
+
+/* 数字卡 */
+.c-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 24px 32px; margin-top: 24px; }
+.c-stat { border-top: 1px solid var(--axis); padding-top: 12px; }
+.c-stat .k { font-size: 15px; color: var(--text-2); }
+.c-stat .v { font-size: 40px; font-weight: 500; line-height: 1.2; margin: 4px 0; }
+.c-stat .d { font-size: 14px; color: var(--text-2); }
+
+/* 柱状图:按组分列,组名 / 绘图区 / 类目标签三行对齐 */
+.c-bars { display: grid; column-gap: 32px; margin-top: 28px; }
+.c-ghead { font-size: 15px; line-height: 1.4; padding-bottom: 10px; border-bottom: 1px solid var(--axis); align-self: end; }
+.c-ghead span { display: block; color: var(--text-2); }
+.c-plot { position: relative; height: 220px; margin-top: 40px; border-bottom: 1px solid var(--axis); }
+.c-gl { position: absolute; left: 0; right: 0; border-top: 1px solid var(--grid); }
+.c-tick { position: absolute; left: 0; transform: translateY(50%); font-size: 13px; color: var(--text-3); background: var(--bg); padding-right: 6px; line-height: 1.3; }
+.c-cols { position: absolute; inset: 0; display: flex; }
+.c-plot.ticked .c-cols { left: 40px; }
+.c-col { flex: 1; position: relative; min-width: 0; }
+.c-bar { position: absolute; bottom: 0; left: 50%; width: min(56px, 70%); transform: translateX(-50%);
+  height: calc(var(--v) * 1%); background: var(--c); min-height: 3px; }
+.c-val { position: absolute; left: -8px; right: -8px; text-align: center; bottom: calc(var(--top, var(--v)) * 1% + 6px);
+  font-size: 20px; font-weight: 500; color: var(--ink); line-height: 1.2; white-space: nowrap; }
+.c-val span { background: var(--bg); padding: 0 4px; }  /* 底色挡住穿过数值的网格线 */
+.c-ci { position: absolute; left: 50%; width: 1.5px; margin-left: -0.75px; background: #3d3b37;
+  bottom: calc(var(--lo) * 1%); height: calc((var(--hi) - var(--lo)) * 1%); }
+.c-ci::before, .c-ci::after { content: ""; position: absolute; left: -6px; width: 13px; height: 1.5px; background: #3d3b37; }
+.c-ci::before { top: 0; } .c-ci::after { bottom: 0; }
+.c-na { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; color: var(--axis); }
+.c-labels { display: flex; margin-top: 10px; }
+.c-labels.ticked { padding-left: 40px; }
+.c-labels div { flex: 1; min-width: 0; text-align: center; font-size: 15px; line-height: 1.35; padding: 0 2px; overflow-wrap: break-word; }
+.c-labels span { display: block; color: var(--text-2); font-size: 13px; margin-top: 4px; }
+
+/* 折线图:SVG 只画线,文字全用 HTML */
+.c-line { display: grid; grid-template-columns: 1fr minmax(120px, 30%); column-gap: 12px; margin-top: 24px; }
+.c-lplot { position: relative; margin-top: 12px; }
+.c-lplot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.c-y { position: absolute; left: 0; transform: translateY(-50%); font-size: 13px; color: var(--text-3); background: var(--bg); padding-right: 6px; line-height: 1.3; }
+.c-x { position: relative; height: 22px; font-size: 13px; color: var(--text-3); margin-top: 6px; }
+.c-x span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.c-x span.last { left: auto; right: 0; transform: none; }
+.c-ends { position: relative; margin-top: 12px; }
+.c-ends div { position: absolute; left: 0; transform: translateY(-50%); white-space: nowrap; font-size: 15px; line-height: 1.2; }
+.c-ends b { font-weight: 500; display: inline-block; min-width: 3.2em; text-align: right; margin-right: 8px; }
+.c-ends .thr { color: var(--text-2); }
+.c-ends .thr i { display: inline-block; width: 22px; border-top: 1px dashed var(--axis); vertical-align: middle; }
+.c-axis { font-size: 13px; color: var(--text-2); margin: 2px 0 0 9%; }
+
+/* 横向柱:柱子多或手机上用;成对柱:几个实体在同一组类目上对比 */
+.c-h4m { display: none; }
+.c-hbars { margin-top: 24px; }
+.c-hgroup { font-size: 15px; line-height: 1.4; padding: 16px 0 8px; border-bottom: 1px solid var(--axis); margin-bottom: 6px; }
+.c-hgroup span { color: var(--text-2); margin-left: 8px; }
+.c-hrow { display: grid; grid-template-columns: minmax(96px, 26%) 1fr; column-gap: 16px; align-items: center; padding: 7px 0; }
+.c-hlab { font-size: 15px; line-height: 1.35; text-align: right; }
+.c-hlab span { display: block; color: var(--text-2); font-size: 13px; }
+.c-htrack { position: relative; height: 22px; margin-right: 64px; border-left: 1px solid var(--axis); }
+.c-htrack.thin { height: 14px; margin-top: 3px; margin-bottom: 3px; }
+.c-hbar { position: absolute; left: 0; top: 0; bottom: 0; min-width: 3px; }
+.c-hci { position: absolute; top: 50%; height: 1.5px; margin-top: -0.75px; background: #3d3b37; }
+.c-hci::before, .c-hci::after { content: ""; position: absolute; top: -6px; width: 1.5px; height: 13px; background: #3d3b37; }
+.c-hci::before { left: 0; } .c-hci::after { right: 0; }
+.c-hval { position: absolute; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 500; white-space: nowrap; }
+.c-htrack.thin .c-hval { font-size: 13px; }
+.c-hna { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 6px; color: var(--axis); }
+.c-hna svg { width: 13px; height: 16px; }
+.c-hna small { font-size: 13px; color: var(--text-2); white-space: nowrap; }
+.c-hkey { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 20px; font-size: 14px; }
+.c-hkey i { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; }
+.c-hkey em { font-style: normal; color: var(--text-2); margin-left: 4px; }
+.c-hint { display: none; }
+
+/* 对比表 */
+.c-tbl { overflow-x: auto; margin-top: 24px; }
+table.c-cmp { border-collapse: collapse; min-width: 600px; width: 100%; font-size: 15px; }
+.c-cmp th, .c-cmp td { border: 1px solid var(--rule); padding: 12px 14px; text-align: left; vertical-align: top; }
+.c-cmp thead th { font-weight: 600; }
+.c-cmp tbody th { font-weight: 600; position: sticky; left: 0; background: var(--bg); z-index: 1; }
+.c-cmp .sub { display: block; font-weight: 400; color: var(--text-2); font-size: 13px; margin-top: 2px; }
+.c-cmp .best { background: var(--hl); font-weight: 600; }
+.c-cmp .pick { border-left: 3px solid var(--focus); border-right: 3px solid var(--focus); }
+.c-cmp thead .pick { border-top: 3px solid var(--focus); }
+.c-cmp tbody tr:last-child .pick { border-bottom: 3px solid var(--focus); }
+.c-cmp .pick.best { background: var(--hl-strong); }
+.c-cmp td.none { color: var(--text-2); }
+
+@media (max-width: 560px) {
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  .two-col { grid-template-columns: 1fr; }
+  .c-bars { column-gap: 16px; }
+  .c-val { font-size: 16px; }
+  .c-labels div { font-size: 13px; } .c-labels span { font-size: 12px; }
+  .c-line { grid-template-columns: minmax(0, 1fr); }
+  .c-ends { order: 5; height: auto !important; }
+  .c-ends div { position: static; transform: none; margin: 4px 0; white-space: normal; }
+  .c-stat .v { font-size: 32px; }
+  .c-stats { gap: 20px 16px; }
+  .c-x span.mh { display: none; }
+  .c-v2h { display: none; }
+  .c-h4m { display: block; }
+  .c-hrow { grid-template-columns: 1fr; row-gap: 4px; }
+  .c-hlab { text-align: left; }
+  .c-htrack { margin-right: 52px; }
+  .c-hint { display: block; font-size: 13px; color: var(--text-2); margin: 16px 0 -16px; }
+  .only-mobile { display: block !important; }
+  .only-desktop { display: none !important; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Scenix-产品需求-PRD</h1>
+<p class="meta">2026-11-25 ｜ 状态：需求对齐完成，待评审 ｜ 决策原始记录：docs/decisions/decision-log.md（21 项）</p>
+
+<p class="lead">Scenix 是一个桌面工作台：内置 Pi 作为 agent runtime，把 agent 的输出渲染成原生可交互界面，而不是一段文字。MVP 面向不写代码的知识工作者，用一件事证明价值：丢进一份 CSV，零指导得到一个可筛选、可保存、可刷新的仪表盘。</p>
+
+<h2>1 产品定位</h2>
+<div class="cards">
+  <div class="card"><h4>是什么</h4><p>本地优先的个人 agent 工作台。agent 用 A2UI 协议输出界面描述，Scenix 用自己的原生组件渲染，样式统一，不执行任何第三方前端代码。</p></div>
+  <div class="card"><h4>为谁</h4><p>非技术的知识工作者：运营、分析、研究。他们没有 Python，没有 API key，也不会装命令行工具，所以环境必须全部内置并自动配好。</p></div>
+  <div class="card"><h4>终局</h4><p>个人本地 agent 工作台，加可扩展的 catalog 生态：仪表盘、审批、表单都可以成为可复用的界面组件。MVP 只留扩展口，不对外开放。</p></div>
+</div>
+
+<h2>2 场景与优先级</h2>
+<div class="tbl-wrap"><table class="tbl">
+<thead><tr><th>场景</th><th>主要用到的界面</th><th>阶段</th></tr></thead>
+<tbody>
+<tr><td>数据分析与可交互仪表盘</td><td>图表、筛选控件、数据表、Canvas 活面板</td><td>MVP 主场景</td></tr>
+<tr><td>文件批量整理，先审批再执行</td><td>操作清单表格、勾选、审批卡片</td><td>MVP 之后</td></tr>
+<tr><td>调研写作，用表单补全需求</td><td>表单、选择器、进度面板</td><td>MVP 之后</td></tr>
+</tbody></table></div>
+
+<h2>3 整体架构</h2>
+<p>所有 agent 能力都在本机。云端只有用户自己的模型 provider，而且只收到 schema、少量样本行和聚合结果。</p>
+<figure class="diagram">
+<div class="scroll-x">
+<svg viewBox="0 0 960 608" role="img" aria-label="Scenix 整体架构：渲染进程与主进程内的 Pi 通过 extension 工具连接数据 runtime、工作文件夹和模型 provider，界面消息与审批请求回到渲染进程" style="min-width:840px;width:100%;height:auto">
+<defs>
+<marker id="a-main" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--flow-main)"/></marker>
+<marker id="a-out" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--flow-out)"/></marker>
+<marker id="a-in" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--flow-in)"/></marker>
+<marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--text-2)"/></marker>
+</defs>
+
+<!-- panels -->
+<rect x="32" y="56" width="288" height="424" rx="8" style="fill:var(--panel-2);stroke:var(--border)"/>
+<text x="48" y="80" font-size="13" font-weight="600" style="fill:var(--text-2)">渲染进程（React）</text>
+<rect x="384" y="56" width="312" height="424" rx="8" style="fill:var(--panel-2);stroke:var(--border)"/>
+<text x="400" y="80" font-size="13" font-weight="600" style="fill:var(--text-2)">主进程（Electron）</text>
+
+<!-- renderer cards -->
+<g style="fill:var(--panel);stroke:var(--border)">
+<rect x="48" y="96" width="256" height="56" rx="6"/><rect x="48" y="168" width="256" height="56" rx="6"/><rect x="48" y="240" width="256" height="56" rx="6"/><rect x="48" y="312" width="256" height="56" rx="6"/><rect x="48" y="384" width="256" height="56" rx="6"/>
+</g>
+<g font-size="14" font-weight="600" style="fill:var(--text)">
+<text x="64" y="120">聊天流</text><text x="64" y="192">A2UI 渲染器</text><text x="64" y="264">Canvas 活面板</text><text x="64" y="336">审批卡片</text><text x="64" y="408">会话侧栏</text>
+</g>
+<g font-size="13" style="fill:var(--text-2)">
+<text x="64" y="140">流式对话与工具进度</text><text x="64" y="212">内联界面，含 Chart 自定义组件</text><text x="64" y="284">侧边展开，可刷新重算</text><text x="64" y="356">用人话描述将要执行的操作</text><text x="64" y="428">状态徽标与系统通知</text>
+</g>
+
+<!-- session manager -->
+<rect x="400" y="96" width="280" height="48" rx="6" style="fill:var(--panel);stroke:var(--border)"/>
+<text x="416" y="118" font-size="14" font-weight="600" style="fill:var(--text)">会话管理</text>
+<text x="416" y="136" font-size="13" style="fill:var(--text-2)">多 session 并行，各绑一个工作文件夹</text>
+
+<!-- Pi container -->
+<rect x="400" y="192" width="280" height="272" rx="8" style="fill:var(--panel);stroke:var(--text-2)"/>
+<text x="416" y="216" font-size="14" font-weight="600" style="fill:var(--text)">Pi runtime（内置）</text>
+<text x="416" y="234" font-size="13" style="fill:var(--text-2)">每个 session 一个独立实例</text>
+<g style="fill:var(--panel-2);stroke:var(--border)">
+<rect x="416" y="248" width="248" height="56" rx="6"/><rect x="416" y="320" width="248" height="56" rx="6"/><rect x="416" y="392" width="248" height="56" rx="6"/>
+</g>
+<g font-size="14" font-weight="600" style="fill:var(--text)">
+<text x="432" y="272">a2ui_render 工具</text><text x="432" y="344">数据查询工具</text><text x="432" y="416">权限桥</text>
+</g>
+<g font-size="13" style="fill:var(--text-2)">
+<text x="432" y="292">校验 A2UI 消息后推给界面</text><text x="432" y="364">只把聚合结果回传给模型</text><text x="432" y="436">把权限请求翻成人话卡片</text>
+</g>
+
+<!-- right column -->
+<g style="fill:var(--panel);stroke:var(--border)">
+<rect x="752" y="96" width="176" height="72" rx="6"/><rect x="752" y="240" width="176" height="72" rx="6"/><rect x="752" y="352" width="176" height="72" rx="6"/>
+</g>
+<g font-size="14" font-weight="600" style="fill:var(--text)">
+<text x="768" y="124">模型 provider</text><text x="768" y="268">数据 runtime</text><text x="768" y="380">工作文件夹</text>
+</g>
+<g font-size="13" style="fill:var(--text-2)">
+<text x="768" y="146">订阅登录或 API key</text><text x="768" y="290">uv、pandas、duckdb</text><text x="768" y="402">CSV、Excel 文件</text>
+</g>
+
+<!-- updater -->
+<rect x="400" y="512" width="280" height="40" rx="6" style="fill:var(--panel);stroke:var(--border)"/>
+<text x="416" y="530" font-size="14" font-weight="600" style="fill:var(--text)">独立更新通道</text>
+<text x="416" y="546" font-size="13" style="fill:var(--text-2)">先过兼容测试，失败自动回滚</text>
+
+<!-- flows -->
+<g fill="none" stroke-width="2">
+<path d="M304,120 H400" style="stroke:var(--flow-main)" marker-end="url(#a-main)"/>
+<path d="M540,144 V192" style="stroke:var(--flow-main)" marker-end="url(#a-main)"/>
+<path d="M680,224 H724 V132 H752" style="stroke:var(--flow-main)" marker-end="url(#a-main)"/>
+<path d="M840,352 V312" style="stroke:var(--flow-in)" marker-end="url(#a-in)"/>
+<path d="M664,348 H736 V276 H752" style="stroke:var(--flow-main)" marker-end="url(#a-main)"/>
+<path d="M416,276 H352 V196 H304" style="stroke:var(--flow-out)" marker-end="url(#a-out)"/>
+<path d="M416,420 H336 V340 H304" style="stroke:var(--flow-out)" marker-end="url(#a-out)"/>
+<path d="M540,512 V464" stroke-dasharray="6 4" style="stroke:var(--text-2)" marker-end="url(#a-gray)"/>
+</g>
+
+<!-- numbers -->
+<g font-size="13" font-weight="600" text-anchor="middle" style="fill:var(--text)">
+<circle cx="352" cy="120" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="352" y="125">1</text>
+<circle cx="540" cy="168" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="540" y="173">2</text>
+<circle cx="724" cy="178" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="724" y="183">3</text>
+<circle cx="840" cy="332" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="840" y="337">4</text>
+<circle cx="736" cy="312" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="736" y="317">5</text>
+<circle cx="352" cy="236" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="352" y="241">6</text>
+<circle cx="336" cy="380" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="336" y="385">7</text>
+</g>
+
+<!-- legend -->
+<g stroke-width="2" fill="none">
+<path d="M48,584 H80" style="stroke:var(--flow-main)"/><path d="M264,584 H296" style="stroke:var(--flow-out)"/><path d="M440,584 H472" style="stroke:var(--flow-in)"/><path d="M640,584 H672" stroke-dasharray="6 4" style="stroke:var(--text-2)"/>
+</g>
+<g font-size="13" style="fill:var(--text)">
+<text x="88" y="589">调用与用户操作</text><text x="304" y="589">输出到界面</text><text x="480" y="589">本地数据输入</text><text x="680" y="589">后台更新（不一定发生）</text>
+</g>
+</svg>
+</div>
+<figcaption>
+1 用户的提问和界面上的操作，进入对应 session。<br>
+2 会话管理把消息交给该 session 的 Pi。<br>
+3 Pi 调用模型，数据出境只含 schema、样本行和聚合结果。<br>
+4 用户的 CSV 从工作文件夹导入本地数据 runtime。<br>
+5 Pi 通过数据查询工具在本地执行查询。<br>
+6 a2ui_render 校验通过的界面消息推给渲染器，校验失败会把错误退回给模型自修。<br>
+7 权限桥把写文件、跑命令等请求变成审批卡片，后台 session 的审批会暂停等用户。
+</figcaption>
+</figure>
+
+<h2>4 一次分析是怎么跑完的</h2>
+<p>关键机制：界面由 agent 的工具调用产生，用户的每次操作又作为消息回到同一个 session，所以筛选、调整都不需要重新开始对话。</p>
+<figure class="diagram">
+<div class="scroll-x">
+<svg viewBox="0 0 960 520" role="img" aria-label="一次分析的时序：用户界面、Pi、数据 runtime、模型之间依次交互，最后生成仪表盘并响应用户筛选" style="min-width:840px;width:100%;height:auto">
+<defs>
+<marker id="s-main" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--flow-main)"/></marker>
+<marker id="s-out" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--flow-out)"/></marker>
+<marker id="s-in" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--flow-in)"/></marker>
+</defs>
+<g stroke-width="1" style="stroke:var(--border)">
+<line x1="120" y1="64" x2="120" y2="480"/><line x1="360" y1="64" x2="360" y2="480"/><line x1="600" y1="64" x2="600" y2="480"/><line x1="840" y1="64" x2="840" y2="480"/>
+</g>
+<g style="fill:var(--panel);stroke:var(--border)">
+<rect x="40" y="24" width="160" height="40" rx="6"/><rect x="280" y="24" width="160" height="40" rx="6"/><rect x="520" y="24" width="160" height="40" rx="6"/><rect x="760" y="24" width="160" height="40" rx="6"/>
+</g>
+<g font-size="14" font-weight="600" text-anchor="middle" style="fill:var(--text)">
+<text x="120" y="49">用户界面</text><text x="360" y="49">Pi</text><text x="600" y="49">数据 runtime</text><text x="840" y="49">模型</text>
+</g>
+<g fill="none" stroke-width="2">
+<path d="M120,104 H360" style="stroke:var(--flow-main)" marker-end="url(#s-main)"/>
+<path d="M360,148 H600" style="stroke:var(--flow-in)" marker-end="url(#s-in)"/>
+<path d="M360,192 H840" style="stroke:var(--flow-main)" marker-end="url(#s-main)"/>
+<path d="M840,236 H360" style="stroke:var(--flow-out)" marker-end="url(#s-out)"/>
+<path d="M360,280 H600" style="stroke:var(--flow-main)" marker-end="url(#s-main)"/>
+<path d="M600,324 H360" style="stroke:var(--flow-out)" marker-end="url(#s-out)"/>
+<path d="M360,368 H120" style="stroke:var(--flow-out)" marker-end="url(#s-out)"/>
+<path d="M120,412 H360" style="stroke:var(--flow-main)" marker-end="url(#s-main)"/>
+<path d="M360,456 H120" style="stroke:var(--flow-out)" marker-end="url(#s-out)"/>
+</g>
+<g font-size="13" font-weight="600" text-anchor="middle" style="fill:var(--text)">
+<circle cx="144" cy="104" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="144" y="109">1</text>
+<circle cx="384" cy="148" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="384" y="153">2</text>
+<circle cx="384" cy="192" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="384" y="197">3</text>
+<circle cx="816" cy="236" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="816" y="241">4</text>
+<circle cx="384" cy="280" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="384" y="285">5</text>
+<circle cx="576" cy="324" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="576" y="329">6</text>
+<circle cx="336" cy="368" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="336" y="373">7</text>
+<circle cx="144" cy="412" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="144" y="417">8</text>
+<circle cx="336" cy="456" r="10" style="fill:var(--panel);stroke:var(--text-2)"/><text x="336" y="461">9</text>
+</g>
+</svg>
+</div>
+<figcaption>
+1 用户拖入 CSV 并提问。<br>
+2 文件导入本地数据 runtime，生成 schema。<br>
+3 Pi 把 schema、样本行和问题发给模型。<br>
+4 模型决定要做哪些查询、画哪些图。<br>
+5 Pi 让数据 runtime 在本地执行查询。<br>
+6 聚合结果回到 Pi。<br>
+7 Pi 调用 a2ui_render，仪表盘出现在聊天里，可展开到 Canvas。<br>
+8 用户调整筛选，操作作为消息回到同一个 session。<br>
+9 Pi 重新查询并更新同一个面板的数据，不新建界面。
+</figcaption>
+</figure>
+
+<h2>5 MVP 与终局</h2>
+<div class="two-col">
+  <div class="callout key"><h4>MVP 要做</h4>
+  <p>内置 Pi 与自动更新通道<br>订阅登录与 API key 的引导配置<br>聊天内联 A2UI 加侧边 Canvas<br>Chart 自定义 catalog（Vega-Lite）<br>托管的本地数据 runtime<br>人话审批卡片与工作文件夹边界<br>活面板的保存与刷新<br>多 session 并行与后台提醒<br>macOS 与 Windows 同时首发</p></div>
+  <div class="callout"><h4>终局目标</h4>
+  <p>个人本地 agent 工作台<br>开放的自定义 catalog 与模板<br>更多场景：批量文件处理、调研写作<br>更多数据源与更多 runtime<br>Linux 支持</p></div>
+</div>
+<div class="tbl-wrap"><table class="tbl">
+<thead><tr><th>MVP 明确不做</th><th>原因</th></tr></thead>
+<tbody>
+<tr><td>其他 CLI runtime 探测（Claude Code、Codex 等）</td><td>MVP 只有内置 Pi，先把一条路径做到零指导可用</td></tr>
+<tr><td>团队协作、账号、云同步</td><td>定位是个人本地工作台，不自建后端</td></tr>
+<tr><td>数据库、在线 API 数据源</td><td>只支持本地 CSV 和 Excel，压低数据源绑定的复杂度</td></tr>
+<tr><td>catalog 市场、模板分享</td><td>内部留扩展口，不对外开放</td></tr>
+<tr><td>多 agent 协作与编排</td><td>不属于本产品范围；多 session 并行是单 runtime 的并行，不是多 agent</td></tr>
+</tbody></table></div>
+
+<h2>6 关键产品规则</h2>
+<div class="cards">
+  <div class="card"><h4>Runtime 与更新</h4><p>Pi 随 app 内置，用户不做选择。runtime 走独立更新通道，每个新版先过 Scenix 的兼容测试再放行；用户端启动自检失败，自动回滚到上一个好版本。</p></div>
+  <div class="card"><h4>模型凭据</h4><p>订阅登录与 API key 双轨，首屏引导配置。凭据只存本机系统 keychain，Scenix 不自建后端。每个 session 可切换 model 与 thinking effort。</p></div>
+  <div class="card"><h4>权限</h4><p>每个项目绑定一个工作文件夹作为边界。写文件、跑命令、联网等请求变成人话卡片，选项是允许一次、始终允许、拒绝。</p></div>
+  <div class="card"><h4>数据隐私</h4><p>全量数据留在本地。模型默认只收到 schema、少量样本行和聚合结果。界面有「已发给模型的内容」面板，用户可关掉样本行，或手动放开全量。</p></div>
+  <div class="card"><h4>活面板</h4><p>保存的是组件树、数据模型、数据源引用和查询定义。数据更新后点刷新就能重算，不用再找 agent。</p></div>
+  <div class="card"><h4>多 session</h4><p>不同项目的会话同时运行、互不阻塞，暂定同时运行 3 个，其余排队。后台 session 用侧栏徽标和系统通知提醒，审批永不因在后台而自动放行。</p></div>
+</div>
+
+<h2>7 验收标准</h2>
+<div class="callout key">
+<p>一个不写代码的人，零指导，在 macOS 和 Windows 上都能走完下面的路径，且两个平台的表现一致。</p>
+<p>1 安装应用，首屏引导完成模型配置<br>2 把一份 CSV 拖进来，用一句话提出分析要求<br>3 得到带图表和筛选控件的仪表盘，筛选能联动<br>4 展开到 Canvas 调整布局并保存<br>5 换一份更新后的 CSV，点刷新得到新结果</p>
+</div>
+
+<h2>8 风险与待验证</h2>
+<div class="tbl-wrap"><table class="tbl">
+<thead><tr><th>待验证项</th><th>为什么重要</th><th>怎么验证</th></tr></thead>
+<tbody>
+<tr><td>Pi extension 能否把结构化 A2UI 消息实时推到界面</td><td>整个渲染闭环的前提</td><td>写一个最小 extension，在 Electron 里端到端跑通</td></tr>
+<tr><td>同一进程内多个 Pi 会话能否并行且互相隔离</td><td>决定用进程内 SDK 还是每个 session 一个子进程，也决定并发上限</td><td>并发起多个会话，实测内存与隔离性</td></tr>
+<tr><td>A2UI 渲染器与自定义 Chart 组件的契合度</td><td>仪表盘是主场景，basic catalog 没有图表</td><td>用 Vega-Lite 做一个自定义组件，验证与数据模型的联动</td></tr>
+<tr><td>模型生成合法 A2UI 的成功率</td><td>决定校验与自修的投入</td><td>用 5 到 10 份真实数据集做基准</td></tr>
+<tr><td>内置数据 runtime 的跨平台打包</td><td>非技术用户不能有任何环境步骤</td><td>在干净的 Windows 与 macOS 机器上安装验证，含签名与公证</td></tr>
+<tr><td>Pi 上游变动</td><td>包名已换过 scope，版本从 0.x 跳到 1.x</td><td>以兼容测试门控更新，并固定使用新 scope 的包</td></tr>
+</tbody></table></div>
+
+<h2>9 推进顺序</h2>
+<div class="callout">
+<p>1 三个 spike：extension 推送、多会话并行、Chart 自定义组件<br>2 渲染闭环：单 session 的对话、A2UI 内联渲染、操作回传<br>3 数据 runtime 与 Chart，跑通 hero 场景<br>4 活面板、多 session、审批卡片与后台提醒<br>5 更新通道、跨平台打包与零指导验收</p>
+</div>
+</main>
+</body>
+</html>
